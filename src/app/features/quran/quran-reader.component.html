@@ -1,0 +1,63 @@
+<section class="page reader">
+  @if (loading()) {
+    <app-state-block kind="loading" title="جارٍ فتح المصحف" message="يتم جلب النص العثماني." />
+  } @else if (error()) {
+    <app-state-block kind="error" title="تعذر الفتح" [message]="error() || ''" />
+  } @else if (surah()) {
+    @if (surah(); as s) {
+    <header class="card head">
+      <div>
+        <p class="muted">سورة {{ s.number }} · {{ quran.revelationLabel(s.revelationType) }} · {{ s.numberOfAyahs }} آية</p>
+        <h1>{{ s.name }}</h1>
+      </div>
+      <div class="tools">
+        <button class="btn btn-ghost" type="button" (click)="changeFont(-2)">أ-</button>
+        <button class="btn btn-ghost" type="button" (click)="changeFont(2)">أ+</button>
+        <button class="btn btn-primary" type="button" (click)="audio.playing() ? audio.pause() : playSurah()">
+          {{ audio.playing() ? 'إيقاف' : 'تلاوة السورة' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="nav">
+      @if (s.number > 1) { <a class="btn btn-ghost" [routerLink]="['/quran/read', s.number - 1]">السابقة</a> }
+      <label>آية <input type="number" min="1" [max]="s.numberOfAyahs" [(ngModel)]="jump" (change)="jumpTo()" /></label>
+      @if (s.number < 114) { <a class="btn btn-ghost" [routerLink]="['/quran/read', s.number + 1]">التالية</a> }
+    </div>
+
+    @if (bismillah(s)) {
+      <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    }
+
+    <article class="mushaf card" [style.fontSize.px]="font()" [style.lineHeight]="settings.settings().quranLineHeight">
+      @for (a of s.ayahs; track a.number; let i = $index) {
+        <p
+          class="ayah"
+          [id]="'ayah-' + a.numberInSurah"
+          [class.active]="audio.currentAyah() === a.number"
+          (click)="playAyah(a.number)"
+        >
+          {{ a.text }}
+          <span class="ayah-num">﴿{{ a.numberInSurah }}﴾</span>
+          <small class="meta">جزء {{ a.juz }} · صفحة {{ a.page }}</small>
+        </p>
+        @if (settings.settings().showTranslation && trans(i)) {
+          <p class="trans">{{ trans(i) }}</p>
+        }
+        <div class="ayah-actions">
+          <button type="button" (click)="user.toggleFavorite(s.number, a.numberInSurah)">مفضلة</button>
+          <button type="button" (click)="user.addBookmark(s.number, a.numberInSurah, s.name)">علامة</button>
+          <button type="button" (click)="copy(a.text, s.number, a.numberInSurah)">نسخ</button>
+          <button type="button" (click)="share(a.text, s.number, a.numberInSurah)">مشاركة</button>
+        </div>
+      }
+    </article>
+
+    <form class="card note" (submit)="$event.preventDefault(); saveNote(s.number, jump)">
+      <label>ملاحظة على الآية {{ jump }}</label>
+      <textarea [(ngModel)]="note" name="note" rows="2"></textarea>
+      <button class="btn btn-primary" type="submit">حفظ الملاحظة</button>
+    </form>
+    }
+  }
+</section>

@@ -1,0 +1,26 @@
+.head, .note { padding: 1rem; }
+.head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.tools, .nav, .ayah-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+.nav { margin: 0.8rem 0; }
+.bismillah { font-family: var(--font-quran); text-align: center; font-size: 1.6rem; }
+.mushaf { padding: 1.2rem; }
+.ayah {
+  font-family: var(--font-quran);
+  margin: 0 0 0.8rem;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 0.2rem 0.3rem;
+}
+.ayah.active { background: rgba(186, 208, 236, 0.45); }
+.ayah-num { color: var(--color-gold-700); padding-inline: 0.2rem; }
+.meta { display: block; font-size: 0.75rem; color: var(--color-muted); font-family: var(--font-ui); }
+.trans { color: var(--color-muted); font-size: 0.95rem; margin: -0.4rem 0 0.8rem; }
+.ayah-actions button, input, textarea {
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+}
+textarea { width: 100%; margin: 0.4rem 0; border-radius: 12px; }
+input { width: 72px; min-height: 40px; }

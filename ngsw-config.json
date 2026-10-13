@@ -1,0 +1,65 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js",
+          "/icons/**",
+          "/assets/**"
+        ]
+      }
+    },
+    {
+      "name": "data",
+      "installMode": "prefetch",
+      "updateMode": "lazy",
+      "resources": {
+        "files": ["/data/**"]
+      }
+    },
+    {
+      "name": "fonts",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": {
+        "urls": [
+          "https://fonts.googleapis.com/**",
+          "https://fonts.gstatic.com/**"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "quran-api",
+      "urls": ["https://api.alquran.cloud/v1/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 200,
+        "maxAge": "14d",
+        "timeout": "8s"
+      }
+    },
+    {
+      "name": "prayer-api",
+      "urls": ["https://api.aladhan.com/v1/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 40,
+        "maxAge": "1d",
+        "timeout": "8s"
+      }
+    }
+  ],
+  "navigationUrls": ["/**"],
+  "navigationRequestStrategy": "freshness"
+}

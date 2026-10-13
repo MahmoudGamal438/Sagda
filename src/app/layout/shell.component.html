@@ -1,0 +1,48 @@
+<a class="skip" href="#main">تخطي إلى المحتوى</a>
+<header class="top">
+  <a routerLink="/" class="brand">
+    <span class="mark">س</span>
+    <span>
+      <strong>سجدة</strong>
+      <small>قرآن · أذكار · صلاة</small>
+    </span>
+  </a>
+  <nav class="side" aria-label="التنقل الرئيسي">
+    @for (item of nav; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.path === '/'}">
+        <app-icon [name]="item.icon" />
+        {{ item.label }}
+      </a>
+    }
+    <a routerLink="/more" routerLinkActive="active">
+      <app-icon name="more" />
+      المزيد
+    </a>
+  </nav>
+  @if (!user.online()) {
+    <span class="offline">بدون اتصال</span>
+  }
+</header>
+
+@if (notify.inAppAlert()) {
+  <div class="alert" role="status">
+    <span>{{ notify.inAppAlert() }}</span>
+    <button type="button" class="btn btn-ghost" (click)="dismissAlert()">إخفاء</button>
+  </div>
+}
+
+<main id="main" [class.compact]="compact">
+  <router-outlet />
+</main>
+
+<nav class="bottom" aria-label="التنقل السفلي">
+  @for (item of nav; track item.path) {
+    <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.path === '/'}">
+      <app-icon [name]="item.icon" />
+      <span>{{ item.label }}</span>
+    </a>
+  }
+</nav>
+
+<app-welcome-modal />
+<app-install-banner />

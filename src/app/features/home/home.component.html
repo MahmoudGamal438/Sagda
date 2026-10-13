@@ -1,0 +1,84 @@
+<section class="page home">
+  <header class="hero card">
+    <p class="muted">{{ greeting() }}</p>
+    <h1>واصل رحلتك مع سجدة</h1>
+    <p>
+      {{ now() | date: 'EEEE d MMMM y' }}
+      @if (prayer.today(); as day) {
+        · {{ day.date.hijriWeekday }} {{ day.date.hijri }}
+      }
+    </p>
+    <small class="muted">التاريخ الهجري قد يختلف بحسب التقويم المعتمد.</small>
+  </header>
+
+  <article class="card next">
+    @if (prayer.nextPrayer(); as next) {
+      <div>
+        <p class="muted">الصلاة القادمة</p>
+        <h2>{{ prayer.prayerLabel(next.key) }}</h2>
+        <p>{{ remaining() }}</p>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="toggleAlerts()">
+        {{ notify.prayerAlertsEnabled() ? 'إيقاف تذكير الصلاة' : 'تشغيل تذكير الصلاة' }}
+      </button>
+    } @else {
+      <p>حدد المدينة لعرض المواقيت.</p>
+      <a routerLink="/prayer" class="btn btn-primary">مواقيت الصلاة</a>
+    }
+  </article>
+
+  @if (prayer.today(); as day) {
+    <div class="timeline card">
+      @for (key of prayerKeys; track key) {
+        <div class="slot" [class.next]="prayer.nextPrayer()?.key === key">
+          <span>{{ prayer.prayerLabel(key) }}</span>
+          <strong>{{ day.timings[key].slice(0, 5) }}</strong>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="grid two">
+    <a class="card action" [routerLink]="user.progress() ? ['/quran/read', user.progress()!.surah] : '/quran'">
+      <span>أكمل القراءة</span>
+      <strong>{{ lastSurahName() }}</strong>
+    </a>
+    <a class="card action" [routerLink]="['/adhkar/read', todayDhikr().id]">
+      <span>{{ todayDhikr().title }}</span>
+      <strong>ابدأ الأذكار</strong>
+    </a>
+    <a class="card action" routerLink="/tasbeeh">
+      <span>المسبحة</span>
+      <strong>{{ user.todayTasbeehCount() }} اليوم</strong>
+    </a>
+    <a class="card action" routerLink="/quran/khatma">
+      <span>الورد اليومي</span>
+      <strong>
+        @if (user.khatma(); as k) {
+          {{ k.completedAyahs }} / 6236
+        } @else {
+          ابدأ ختمة
+        }
+      </strong>
+    </a>
+  </div>
+
+  <article class="card benefit">
+    <p class="muted">فائدة اليوم</p>
+    <p>{{ benefit.text }}</p>
+    <small class="muted">{{ benefit.source }}</small>
+  </article>
+
+  @if (user.activity()[0]; as last) {
+    <p class="muted">آخر نشاط: {{ last.title }}</p>
+  }
+
+  <nav class="shortcuts">
+    <a routerLink="/quran">السور</a>
+    <a routerLink="/quran/listen">التلاوات</a>
+    <a routerLink="/favorites">المفضلة</a>
+    <a routerLink="/qibla">القبلة</a>
+    <a routerLink="/calendar">التقويم</a>
+    <a routerLink="/settings">الإعدادات</a>
+  </nav>
+</section>
