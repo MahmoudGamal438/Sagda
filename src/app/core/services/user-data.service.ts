@@ -31,6 +31,7 @@ export class UserDataService {
   readonly reminders = signal<Reminder[]>(this.storage.get('reminders', this.defaultReminders()));
   readonly tasbeehSessions = signal<TasbeehSession[]>(this.storage.get('tasbeeh-sessions', []));
   readonly activity = signal<ActivityEntry[]>(this.storage.get('activity', []));
+  readonly hadithFavorites = signal<string[]>(this.storage.get('hadith-favorites', []));
   readonly online = signal(navigator.onLine);
 
   constructor() {
@@ -58,6 +59,18 @@ export class UserDataService {
 
   isFavorite(surah: number, ayah: number): boolean {
     return this.favorites().some((i) => i.surah === surah && i.ayah === ayah);
+  }
+
+  toggleHadithFavorite(id: string): void {
+    const next = this.hadithFavorites().includes(id)
+      ? this.hadithFavorites().filter((x) => x !== id)
+      : [...this.hadithFavorites(), id];
+    this.hadithFavorites.set(next);
+    this.storage.set('hadith-favorites', next);
+  }
+
+  isHadithFavorite(id: string): boolean {
+    return this.hadithFavorites().includes(id);
   }
 
   addBookmark(surah: number, ayah: number, label: string): void {

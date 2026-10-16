@@ -33,11 +33,13 @@ export interface CityOption {
 }
 
 export type PrayerKey = keyof PrayerTimings;
+export type AdhanSound = 'athan' | 'short' | 'silent';
 
 export interface PrayerAlertSetting {
   enabled: boolean;
   minutesBefore: number;
-  sound: 'athan' | 'short' | 'silent';
+  sound: AdhanSound;
+  iqamaMinutes: number;
 }
 
 export interface PrayerSettings {
@@ -47,4 +49,5 @@ export interface PrayerSettings {
   adjustments: Partial<Record<PrayerKey, number>>;
   alerts: Record<Exclude<PrayerKey, 'Sunrise'>, PrayerAlertSetting>;
   useGeolocation: boolean;
+  use24Hour: boolean;
 }

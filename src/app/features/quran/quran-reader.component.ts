@@ -7,11 +7,12 @@ import { SettingsService } from '../../core/services/settings.service';
 import { UserDataService } from '../../core/services/user-data.service';
 import { SurahDetail } from '../../core/models/quran.model';
 import { StateBlockComponent } from '../../shared/state-block.component';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-quran-reader',
   standalone: true,
-  imports: [RouterLink, FormsModule, StateBlockComponent],
+  imports: [RouterLink, FormsModule, StateBlockComponent, IconComponent],
   templateUrl: './quran-reader.component.html',
   styleUrl: './quran-reader.component.scss'
 })

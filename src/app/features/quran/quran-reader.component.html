@@ -5,59 +5,85 @@
     <app-state-block kind="error" title="تعذر الفتح" [message]="error() || ''" />
   } @else if (surah()) {
     @if (surah(); as s) {
-    <header class="card head">
-      <div>
-        <p class="muted">سورة {{ s.number }} · {{ quran.revelationLabel(s.revelationType) }} · {{ s.numberOfAyahs }} آية</p>
-        <h1>{{ s.name }}</h1>
-      </div>
-      <div class="tools">
-        <button class="btn btn-ghost" type="button" (click)="changeFont(-2)">أ-</button>
-        <button class="btn btn-ghost" type="button" (click)="changeFont(2)">أ+</button>
-        <button class="btn btn-primary" type="button" (click)="audio.playing() ? audio.pause() : playSurah()">
-          {{ audio.playing() ? 'إيقاف' : 'تلاوة السورة' }}
-        </button>
-      </div>
-    </header>
-
-    <div class="nav">
-      @if (s.number > 1) { <a class="btn btn-ghost" [routerLink]="['/quran/read', s.number - 1]">السابقة</a> }
-      <label>آية <input type="number" min="1" [max]="s.numberOfAyahs" [(ngModel)]="jump" (change)="jumpTo()" /></label>
-      @if (s.number < 114) { <a class="btn btn-ghost" [routerLink]="['/quran/read', s.number + 1]">التالية</a> }
-    </div>
-
-    @if (bismillah(s)) {
-      <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
-    }
-
-    <article class="mushaf card" [style.fontSize.px]="font()" [style.lineHeight]="settings.settings().quranLineHeight">
-      @for (a of s.ayahs; track a.number; let i = $index) {
-        <p
-          class="ayah"
-          [id]="'ayah-' + a.numberInSurah"
-          [class.active]="audio.currentAyah() === a.number"
-          (click)="playAyah(a.number)"
-        >
-          {{ a.text }}
-          <span class="ayah-num">﴿{{ a.numberInSurah }}﴾</span>
-          <small class="meta">جزء {{ a.juz }} · صفحة {{ a.page }}</small>
-        </p>
-        @if (settings.settings().showTranslation && trans(i)) {
-          <p class="trans">{{ trans(i) }}</p>
-        }
-        <div class="ayah-actions">
-          <button type="button" (click)="user.toggleFavorite(s.number, a.numberInSurah)">مفضلة</button>
-          <button type="button" (click)="user.addBookmark(s.number, a.numberInSurah, s.name)">علامة</button>
-          <button type="button" (click)="copy(a.text, s.number, a.numberInSurah)">نسخ</button>
-          <button type="button" (click)="share(a.text, s.number, a.numberInSurah)">مشاركة</button>
+      <header class="card head">
+        <div>
+          <p class="muted small">
+            سورة {{ s.number }} · {{ quran.revelationLabel(s.revelationType) }} · {{ s.numberOfAyahs }} آية
+          </p>
+          <h1>{{ s.name }}</h1>
         </div>
-      }
-    </article>
+        <div class="tools">
+          <button class="btn btn-ghost icon-only" type="button" (click)="changeFont(-2)" aria-label="تصغير الخط">أ-</button>
+          <button class="btn btn-ghost icon-only" type="button" (click)="changeFont(2)" aria-label="تكبير الخط">أ+</button>
+          <button class="btn btn-primary" type="button" (click)="audio.playing() ? audio.pause() : playSurah()">
+            <app-icon [name]="audio.playing() ? 'pause' : 'play'" />
+            {{ audio.playing() ? 'إيقاف' : 'تلاوة السورة' }}
+          </button>
+        </div>
+      </header>
 
-    <form class="card note" (submit)="$event.preventDefault(); saveNote(s.number, jump)">
-      <label>ملاحظة على الآية {{ jump }}</label>
-      <textarea [(ngModel)]="note" name="note" rows="2"></textarea>
-      <button class="btn btn-primary" type="submit">حفظ الملاحظة</button>
-    </form>
+      <div class="nav card">
+        @if (s.number > 1) {
+          <a class="btn btn-ghost" [routerLink]="['/quran/read', s.number - 1]">
+            <app-icon name="chevronRight" /> السابقة
+          </a>
+        } @else {
+          <span></span>
+        }
+        <label class="jump">
+          <span>الانتقال إلى آية</span>
+          <input type="number" min="1" [max]="s.numberOfAyahs" [(ngModel)]="jump" (change)="jumpTo()" />
+        </label>
+        @if (s.number < 114) {
+          <a class="btn btn-ghost" [routerLink]="['/quran/read', s.number + 1]">
+            التالية <app-icon name="chevronLeft" />
+          </a>
+        } @else {
+          <span></span>
+        }
+      </div>
+
+      @if (bismillah(s)) {
+        <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+      }
+
+      <article class="mushaf card" [style.fontSize.px]="font()" [style.lineHeight]="settings.settings().quranLineHeight">
+        @for (a of s.ayahs; track a.number; let i = $index) {
+          <div class="ayah-block" [id]="'ayah-' + a.numberInSurah">
+            <p class="ayah" [class.active]="audio.currentAyah() === a.number" (click)="playAyah(a.number)">
+              <span class="ayah-text">{{ a.text }}</span>
+              <span class="ayah-num">﴿{{ a.numberInSurah }}﴾</span>
+            </p>
+            @if (settings.settings().showTranslation && trans(i)) {
+              <p class="trans">{{ trans(i) }}</p>
+            }
+            <div class="ayah-actions">
+              <button type="button" [class.on]="user.isFavorite(s.number, a.numberInSurah)" (click)="user.toggleFavorite(s.number, a.numberInSurah)">
+                <app-icon name="heart" /> {{ user.isFavorite(s.number, a.numberInSurah) ? 'في المفضلة' : 'مفضلة' }}
+              </button>
+              <button type="button" (click)="user.addBookmark(s.number, a.numberInSurah, s.name)">
+                <app-icon name="star" /> علامة
+              </button>
+              <button type="button" (click)="playAyah(a.number)">
+                <app-icon name="play" /> تلاوة
+              </button>
+              <button type="button" (click)="copy(a.text, s.number, a.numberInSurah)">
+                <app-icon name="copy" /> نسخ
+              </button>
+              <button type="button" (click)="share(a.text, s.number, a.numberInSurah)">
+                <app-icon name="share" /> مشاركة
+              </button>
+              <small class="meta">جزء {{ a.juz }} · صفحة {{ a.page }}</small>
+            </div>
+          </div>
+        }
+      </article>
+
+      <form class="card note" (submit)="$event.preventDefault(); saveNote(s.number, jump)">
+        <label>ملاحظة على الآية {{ jump }}</label>
+        <textarea [(ngModel)]="note" name="note" rows="2"></textarea>
+        <button class="btn btn-primary" type="submit"><app-icon name="check" /> حفظ الملاحظة</button>
+      </form>
     }
   }
 </section>

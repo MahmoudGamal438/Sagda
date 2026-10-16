@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  AdhanSound,
   CityOption,
   PrayerAlertSetting,
   PrayerDay,
@@ -12,6 +13,7 @@ import {
 } from '../models/prayer.model';
 import { StorageService } from './storage.service';
 import { EGYPT_CITIES } from '../data/cities.data';
+import { countdown, formatTime, prayerPhases, parsePrayerTime } from '../utils/prayer.util';
 
 interface AladhanEnvelope<T> {
   code: number;
@@ -24,7 +26,8 @@ const ORDER: PrayerKey[] = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'
 const DEFAULT_ALERT: PrayerAlertSetting = {
   enabled: true,
   minutesBefore: 10,
-  sound: 'short'
+  sound: 'short',
+  iqamaMinutes: 0
 };
 
 const DEFAULT_SETTINGS: PrayerSettings = {
@@ -32,6 +35,7 @@ const DEFAULT_SETTINGS: PrayerSettings = {
   school: 0,
   adjustments: {},
   useGeolocation: false,
+  use24Hour: true,
   alerts: {
     Fajr: { ...DEFAULT_ALERT },
     Dhuhr: { ...DEFAULT_ALERT },
@@ -40,6 +44,12 @@ const DEFAULT_SETTINGS: PrayerSettings = {
     Isha: { ...DEFAULT_ALERT }
   }
 };
+
+export interface AdhanSoundOption {
+  id: AdhanSound;
+  name: string;
+  hint: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class PrayerService {
@@ -53,6 +63,11 @@ export class PrayerService {
     { id: 2, name: 'الجمعية الإسلامية لأمريكا الشمالية' },
     { id: 1, name: 'جامعة العلوم الإسلامية بكراتشي' }
   ];
+  readonly sounds: AdhanSoundOption[] = [
+    { id: 'athan', name: 'أذان كامل', hint: 'ملف صوتي محلي (adhan.mp3)' },
+    { id: 'short', name: 'تنبيه قصير', hint: 'نغمة خفيفة عبر السمّاعة' },
+    { id: 'silent', name: 'صامت', hint: 'بدون صوت' }
+  ];
 
   readonly settings = signal<PrayerSettings>(
     this.storage.get('prayer-settings', {
@@ -64,8 +79,14 @@ export class PrayerService {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly lastFetchedAt = signal<number | null>(this.storage.get('prayer-fetched', null));
+  readonly tick = signal(Date.now());
+
+  constructor() {
+    window.setInterval(() => this.tick.set(Date.now()), 30000);
+  }
 
   readonly nextPrayer = computed(() => {
+    this.tick();
     const day = this.today();
     if (!day) {
       return null;
@@ -164,10 +185,18 @@ export class PrayerService {
   }
 
   parseTime(hhmm: string, base = new Date()): Date {
+    return parsePrayerTime(hhmm, base);
+  }
+
+  private applyAdjust(hhmm: string, minutes: number): string {
+    if (!minutes) {
+      return hhmm;
+    }
     const [h, m] = hhmm.split(' ')[0].split(':').map(Number);
-    const d = new Date(base);
-    d.setHours(h, m, 0, 0);
-    return d;
+    const total = (h * 60 + m + minutes + 1440) % 1440;
+    const hh = String(Math.floor(total / 60)).padStart(2, '0');
+    const mm = String(total % 60).padStart(2, '0');
+    return `${hh}:${mm}`;
   }
 
   remaining(to: Date): string {
@@ -199,6 +228,24 @@ export class PrayerService {
     return { key: 'Fajr', at: tomorrowFajr };
   }
 
+  formatTimeValue(key: PrayerKey): string {
+    const day = this.today();
+    const raw = day?.timings[key];
+    return raw ? formatTime(raw, this.settings().use24Hour) : '—';
+  }
+
+  countdownTo(to: Date): ReturnType<typeof countdown> {
+    return countdown(to, new Date());
+  }
+
+  phases(): Record<PrayerKey, ReturnType<typeof prayerPhases>[PrayerKey]> {
+    const day = this.today();
+    if (!day) {
+      return {} as Record<PrayerKey, ReturnType<typeof prayerPhases>[PrayerKey]>;
+    }
+    return prayerPhases(day.timings, new Date());
+  }
+
   private nearestCity(lat: number, lng: number): CityOption | null {
     let best: CityOption | null = null;
     let dist = Infinity;
@@ -213,14 +260,16 @@ export class PrayerService {
   }
 
   private mapDay(data: AladhanDay, loc: CityOption): PrayerDay {
+    const adj = this.settings().adjustments;
+    const shift = (key: PrayerKey): string => this.applyAdjust(data.timings[key], adj[key] ?? 0);
     return {
       timings: {
-        Fajr: data.timings.Fajr,
-        Sunrise: data.timings.Sunrise,
-        Dhuhr: data.timings.Dhuhr,
-        Asr: data.timings.Asr,
-        Maghrib: data.timings.Maghrib,
-        Isha: data.timings.Isha
+        Fajr: shift('Fajr'),
+        Sunrise: shift('Sunrise'),
+        Dhuhr: shift('Dhuhr'),
+        Asr: shift('Asr'),
+        Maghrib: shift('Maghrib'),
+        Isha: shift('Isha')
       },
       date: {
         readable: data.date.readable,

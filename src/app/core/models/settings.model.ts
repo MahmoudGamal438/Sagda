@@ -12,6 +12,8 @@ export interface AppSettings {
   reduceMotion: boolean;
   tasbeehVibrate: boolean;
   tasbeehSound: boolean;
+  alertVolume: number;
+  adhanVoice: string;
   installPromptDismissedAt: number | null;
 }
 

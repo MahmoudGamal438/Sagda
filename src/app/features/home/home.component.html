@@ -1,58 +1,111 @@
 <section class="page home">
   <header class="hero card">
-    <p class="muted">{{ greeting() }}</p>
-    <h1>واصل رحلتك مع سجدة</h1>
-    <p>
-      {{ now() | date: 'EEEE d MMMM y' }}
-      @if (prayer.today(); as day) {
-        · {{ day.date.hijriWeekday }} {{ day.date.hijri }}
-      }
-    </p>
-    <small class="muted">التاريخ الهجري قد يختلف بحسب التقويم المعتمد.</small>
+    <div class="hero-copy">
+      <p class="muted">{{ greeting() }}</p>
+      <h1>واصل رحلتك مع سجدة</h1>
+      <p class="dates">
+        {{ now() | date: 'EEEE d MMMM y' }}
+        @if (prayer.today(); as day) {
+          <span class="sep">·</span>
+          <span class="hijri">{{ day.date.hijriWeekday }} {{ day.date.hijri }}</span>
+        }
+      </p>
+      <small class="muted">التاريخ الهجري تقريبي وقد يختلف عن الرؤية الشرعية بيوم.</small>
+    </div>
+    <div class="hero-mark" aria-hidden="true">
+      <app-icon name="moon" />
+    </div>
   </header>
 
-  <article class="card next">
-    @if (prayer.nextPrayer(); as next) {
-      <div>
-        <p class="muted">الصلاة القادمة</p>
-        <h2>{{ prayer.prayerLabel(next.key) }}</h2>
-        <p>{{ remaining() }}</p>
-      </div>
-      <button type="button" class="btn btn-primary" (click)="toggleAlerts()">
-        {{ notify.prayerAlertsEnabled() ? 'إيقاف تذكير الصلاة' : 'تشغيل تذكير الصلاة' }}
-      </button>
-    } @else {
-      <p>حدد المدينة لعرض المواقيت.</p>
-      <a routerLink="/prayer" class="btn btn-primary">مواقيت الصلاة</a>
-    }
-  </article>
-
-  @if (prayer.today(); as day) {
-    <div class="timeline card">
-      @for (key of prayerKeys; track key) {
-        <div class="slot" [class.next]="prayer.nextPrayer()?.key === key">
-          <span>{{ prayer.prayerLabel(key) }}</span>
-          <strong>{{ day.timings[key].slice(0, 5) }}</strong>
-        </div>
-      }
-    </div>
+  @if (prayer.loading() && !prayer.today()) {
+    <p class="muted">جارٍ جلب المواقيت…</p>
+  }
+  @if (prayer.error()) {
+    <p class="chip">{{ prayer.error() }}</p>
   }
 
+  @if (prayer.today(); as day) {
+    <div class="prayer-row">
+      @for (key of obligatory; track key) {
+        <article
+          class="prayer-card card"
+          [class.current]="phases()[key] === 'current'"
+          [class.next]="isNext(key)"
+        >
+          <app-icon [name]="iconFor(key)" />
+          <span class="name">{{ prayer.prayerLabel(key) }}</span>
+          <strong class="time">{{ prayer.formatTimeValue(key) }}</strong>
+          <span class="status">{{ phaseLabel(phases()[key]) }}</span>
+        </article>
+      }
+    </div>
+
+    <article class="sunrise card">
+      <span class="sun">
+        <app-icon name="sunrise" />
+        <span>الشروق</span>
+        <strong>{{ prayer.formatTimeValue('Sunrise') }}</strong>
+      </span>
+      <small class="muted">يُعرض للعلم، وليس صلاة مفروضة.</small>
+    </article>
+
+    @if (countdown(); as c) {
+      <article class="countdown card">
+        <div class="cd-label">
+          <p class="muted">الصلاة القادمة</p>
+          <h2>{{ prayer.prayerLabel(c.next.key) }}</h2>
+          <p class="muted small">عند الساعة {{ prayer.formatTimeValue(c.next.key) }}</p>
+        </div>
+        <div class="clock" aria-live="polite" [attr.aria-label]="'الوقت المتبقي للصلاة'">
+          <span><strong>{{ pad(c.parts.h) }}</strong><small>ساعة</small></span>
+          <i>:</i>
+          <span><strong>{{ pad(c.parts.m) }}</strong><small>دقيقة</small></span>
+          <i>:</i>
+          <span><strong>{{ pad(c.parts.s) }}</strong><small>ثانية</small></span>
+        </div>
+        <button type="button" class="btn" [class.btn-gold]="!notify.prayerAlertsEnabled()" [class.btn-ghost]="notify.prayerAlertsEnabled()" (click)="toggleAlerts()">
+          <app-icon name="bell" />
+          {{ notify.prayerAlertsEnabled() ? 'إيقاف التنبيه' : 'تشغيل التنبيه' }}
+        </button>
+      </article>
+    }
+  } @else {
+    <article class="card empty-state">
+      <p>حدّد مدينتك لعرض مواقيت الصلاة والتنبيهات.</p>
+      <a routerLink="/prayer" class="btn btn-gold">مواقيت الصلاة</a>
+    </article>
+  }
+
+  <h2 class="section-title">الوصول السريع</h2>
+  <div class="quick-grid">
+    @for (q of quickLinks; track q.path) {
+      <a class="quick card" [routerLink]="q.path">
+        <span class="q-icon"><app-icon [name]="q.icon" /></span>
+        <span class="q-text">
+          <strong>{{ q.label }}</strong>
+          <small>{{ q.hint }}</small>
+        </span>
+        <app-icon name="chevronLeft" class="q-arrow" />
+      </a>
+    }
+  </div>
+
+  <h2 class="section-title">متابعتك</h2>
   <div class="grid two">
     <a class="card action" [routerLink]="user.progress() ? ['/quran/read', user.progress()!.surah] : '/quran'">
-      <span>أكمل القراءة</span>
+      <span class="a-top"><app-icon name="quran" /> أكمل القراءة</span>
       <strong>{{ lastSurahName() }}</strong>
     </a>
     <a class="card action" [routerLink]="['/adhkar/read', todayDhikr().id]">
-      <span>{{ todayDhikr().title }}</span>
+      <span class="a-top"><app-icon name="adhkar" /> {{ todayDhikr().title }}</span>
       <strong>ابدأ الأذكار</strong>
     </a>
     <a class="card action" routerLink="/tasbeeh">
-      <span>المسبحة</span>
+      <span class="a-top"><app-icon name="tasbeeh" /> المسبحة</span>
       <strong>{{ user.todayTasbeehCount() }} اليوم</strong>
     </a>
     <a class="card action" routerLink="/quran/khatma">
-      <span>الورد اليومي</span>
+      <span class="a-top"><app-icon name="check" /> الورد اليومي</span>
       <strong>
         @if (user.khatma(); as k) {
           {{ k.completedAyahs }} / 6236
@@ -65,20 +118,14 @@
 
   <article class="card benefit">
     <p class="muted">فائدة اليوم</p>
-    <p>{{ benefit.text }}</p>
-    <small class="muted">{{ benefit.source }}</small>
+    <p class="benefit-text">{{ benefit.text }}</p>
+    <small class="muted">— {{ benefit.source }}</small>
   </article>
 
-  @if (user.activity()[0]; as last) {
-    <p class="muted">آخر نشاط: {{ last.title }}</p>
+  @if (settings.settings().personalDua; as dua) {
+    <article class="card dua-card">
+      <p class="muted">دعاؤك الشخصي</p>
+      <p class="dua-text">{{ dua }}</p>
+    </article>
   }
-
-  <nav class="shortcuts">
-    <a routerLink="/quran">السور</a>
-    <a routerLink="/quran/listen">التلاوات</a>
-    <a routerLink="/favorites">المفضلة</a>
-    <a routerLink="/qibla">القبلة</a>
-    <a routerLink="/calendar">التقويم</a>
-    <a routerLink="/settings">الإعدادات</a>
-  </nav>
 </section>

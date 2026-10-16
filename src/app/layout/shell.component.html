@@ -1,27 +1,70 @@
 <a class="skip" href="#main">تخطي إلى المحتوى</a>
+
 <header class="top">
-  <a routerLink="/" class="brand">
-    <span class="mark">س</span>
-    <span>
-      <strong>سجدة</strong>
-      <small>قرآن · أذكار · صلاة</small>
-    </span>
-  </a>
-  <nav class="side" aria-label="التنقل الرئيسي">
-    @for (item of nav; track item.path) {
-      <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.path === '/'}">
-        <app-icon [name]="item.icon" />
-        {{ item.label }}
-      </a>
-    }
-    <a routerLink="/more" routerLinkActive="active">
-      <app-icon name="more" />
-      المزيد
+  <div class="bar">
+    <button
+      type="button"
+      class="icon-btn"
+      (click)="toggleMenu()"
+      aria-label="فتح القائمة"
+      [attr.aria-expanded]="menuOpen()"
+    >
+      <app-icon name="menu" />
+    </button>
+
+    <a routerLink="/" class="brand" aria-label="سجدة — الرئيسية">
+      <app-logo [size]="40" [withText]="true" tagline="" />
     </a>
-  </nav>
-  @if (!user.online()) {
-    <span class="offline">بدون اتصال</span>
-  }
+
+    <div class="bar-actions">
+      <button
+        type="button"
+        class="icon-btn"
+        (click)="toggleTheme()"
+        [attr.aria-label]="settings.isDark() ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الليلي'"
+        [title]="settings.isDark() ? 'الوضع الفاتح' : 'الوضع الليلي'"
+      >
+        <app-icon [name]="settings.isDark() ? 'sun' : 'moon'" />
+      </button>
+    </div>
+  </div>
+
+  <div class="sub">
+    <div class="dates" aria-label="التاريخ">
+      <span class="greg">{{ now() | date: 'EEEE d MMMM y' }}</span>
+      <span class="dot">·</span>
+      <span class="hijri">{{ hijriLabel() }}</span>
+    </div>
+
+    <div class="loc">
+      <button type="button" class="loc-btn" (click)="toggleLoc()" [attr.aria-expanded]="locOpen()">
+        <app-icon name="pin" />
+        <span>{{ cityName() }}</span>
+        <app-icon name="chevronDown" />
+      </button>
+      @if (locOpen()) {
+        <div class="loc-panel card" role="dialog" aria-label="تحديد الموقع">
+          <label class="field">
+            <span>المدينة</span>
+            <select [value]="prayer.settings().city?.name ?? ''" (change)="pickCity($any($event.target).value)">
+              @for (c of prayer.cities; track c.name) {
+                <option [value]="c.name">{{ c.name }} · {{ c.country }}</option>
+              }
+            </select>
+          </label>
+          <div class="loc-actions">
+            <button type="button" class="btn btn-gold" (click)="useGps()">
+              <app-icon name="gps" /> موقعي الحالي
+            </button>
+            <button type="button" class="btn btn-ghost" (click)="refresh()">
+              <app-icon name="refresh" /> تحديث المواقيت
+            </button>
+          </div>
+          <p class="hint">يُطلب إذن الموقع عند اختيار «موقعي الحالي» فقط، ويمكنك دائمًا اختيار المدينة يدويًا.</p>
+        </div>
+      }
+    </div>
+  </div>
 </header>
 
 @if (notify.inAppAlert()) {
@@ -35,14 +78,57 @@
   <router-outlet />
 </main>
 
+@if (showTop()) {
+  <button type="button" class="to-top" (click)="scrollTop()" aria-label="العودة إلى أعلى الصفحة">
+    <app-icon name="arrowUp" />
+  </button>
+}
+
 <nav class="bottom" aria-label="التنقل السفلي">
-  @for (item of nav; track item.path) {
-    <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.path === '/'}">
+  @for (item of bottomNav; track item.path) {
+    <a
+      [routerLink]="item.path"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+    >
       <app-icon [name]="item.icon" />
       <span>{{ item.label }}</span>
     </a>
   }
 </nav>
 
+@if (menuOpen()) {
+  <div class="scrim" (click)="closeMenu()"></div>
+  <aside class="drawer" role="dialog" aria-label="القائمة الجانبية" aria-modal="true">
+    <div class="drawer-head">
+      <app-logo [size]="42" [withText]="true" />
+      <button type="button" class="icon-btn" (click)="closeMenu()" aria-label="إغلاق القائمة">
+        <app-icon name="close" />
+      </button>
+    </div>
+    <nav class="drawer-nav">
+      @for (group of groups; track group.title) {
+        <section class="grp">
+          <h3>
+            <app-icon [name]="group.icon" />
+            {{ group.title }}
+          </h3>
+          @for (item of group.items; track item.path) {
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+            >
+              <app-icon [name]="item.icon" />
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        </section>
+      }
+    </nav>
+  </aside>
+}
+
 <app-welcome-modal />
+<app-audio-player />
 <app-install-banner />

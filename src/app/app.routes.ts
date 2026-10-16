@@ -110,6 +110,46 @@ export const routes: Routes = [
         path: 'offline',
         loadComponent: () =>
           import('./features/offline/offline.component').then((m) => m.OfflineComponent)
+      },
+      {
+        path: 'hadith',
+        loadComponent: () =>
+          import('./features/hadith/hadith-library.component').then((m) => m.HadithLibraryComponent)
+      },
+      {
+        path: 'hadith/:id',
+        loadComponent: () =>
+          import('./features/hadith/hadith-detail.component').then((m) => m.HadithDetailComponent)
+      },
+      {
+        path: 'ruqyah',
+        loadComponent: () =>
+          import('./features/ruqyah/ruqyah.component').then((m) => m.RuqyahComponent)
+      },
+      {
+        path: 'quiz',
+        loadComponent: () =>
+          import('./features/quiz/quiz.component').then((m) => m.QuizComponent)
+      },
+      {
+        path: 'radio',
+        loadComponent: () =>
+          import('./features/radio/radio.component').then((m) => m.RadioComponent)
+      },
+      {
+        path: 'stories',
+        loadComponent: () =>
+          import('./features/stories/stories.component').then((m) => m.StoriesComponent)
+      },
+      {
+        path: 'stories/:id',
+        loadComponent: () =>
+          import('./features/stories/story-detail.component').then((m) => m.StoryDetailComponent)
+      },
+      {
+        path: 'assistant',
+        loadComponent: () =>
+          import('./features/assistant/assistant.component').then((m) => m.AssistantComponent)
       }
     ]
   },

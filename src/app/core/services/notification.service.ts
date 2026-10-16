@@ -1,7 +1,11 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { PrayerService } from './prayer.service';
 import { UserDataService } from './user-data.service';
-import { PrayerKey } from '../models/prayer.model';
+import { SettingsService } from './settings.service';
+import { AdhanSound, PrayerKey } from '../models/prayer.model';
+import { findAdhanVoice } from '../data/adhan-voices.data';
+
+type AlertKey = Exclude<PrayerKey, 'Sunrise'>;
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -13,13 +17,15 @@ export class NotificationService {
     localStorage.getItem('sujda:prayer-alerts') !== 'off'
   );
 
+  private prayer = inject(PrayerService);
+  private user = inject(UserDataService);
+  private settings = inject(SettingsService);
+
   private fired = new Set<string>();
   private timer: number | null = null;
+  private adhanCache = new Map<string, HTMLAudioElement>();
 
-  constructor(
-    private prayer: PrayerService,
-    private user: UserDataService
-  ) {
+  constructor() {
     const today = new Date().toDateString();
     const stored = localStorage.getItem('sujda:fired-alerts');
     if (stored) {
@@ -57,9 +63,20 @@ export class NotificationService {
     this.timer = window.setInterval(() => this.tick(), 30000);
   }
 
-  testSound(): void {
-    this.beep();
+  testSound(sound: AdhanSound = 'short'): void {
+    this.playSound(sound);
     this.showInApp('هذا اختبار لصوت التنبيه.');
+  }
+
+  testAdhan(voiceId?: string): void {
+    const id = voiceId ?? this.settings.settings().adhanVoice;
+    const voice = findAdhanVoice(id);
+    this.playAdhanFile(voice.file, this.settings.settings().alertVolume);
+    this.showInApp(`تجربة صوت الأذان: ${voice.muezzin}`);
+  }
+
+  stopAdhan(): void {
+    this.adhanCache.forEach((a) => a.pause());
   }
 
   private tick(): void {
@@ -75,7 +92,7 @@ export class NotificationService {
     if (!day) {
       return;
     }
-    const keys: Array<Exclude<PrayerKey, 'Sunrise'>> = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+    const keys: AlertKey[] = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
     const now = Date.now();
     for (const key of keys) {
       const setting = this.prayer.settings().alerts[key];
@@ -83,10 +100,26 @@ export class NotificationService {
         continue;
       }
       const at = this.prayer.parseTime(day.timings[key]).getTime();
-      const before = at - setting.minutesBefore * 60000;
       const label = this.prayer.prayerLabel(key);
-      this.maybeFire(`before-${key}`, before, now, `تبقّى ${setting.minutesBefore} دقائق على صلاة ${label}`);
-      this.maybeFire(`at-${key}`, at, now, `حان الآن وقت صلاة ${label}`);
+      if (setting.minutesBefore > 0) {
+        this.maybeFire(
+          `before-${key}`,
+          at - setting.minutesBefore * 60000,
+          now,
+          `تبقّى ${setting.minutesBefore} دقائق على صلاة ${label}`,
+          setting.sound
+        );
+      }
+      this.maybeFire(`at-${key}`, at, now, `حان الآن وقت صلاة ${label}`, setting.sound);
+      if (setting.iqamaMinutes > 0) {
+        this.maybeFire(
+          `iqama-${key}`,
+          at + setting.iqamaMinutes * 60000,
+          now,
+          `الإقامة الآن لصلاة ${label}`,
+          'short'
+        );
+      }
     }
   }
 
@@ -102,11 +135,23 @@ export class NotificationService {
       if (now.getHours() !== reminder.hour || now.getMinutes() !== reminder.minute) {
         continue;
       }
-      this.maybeFire(`rem-${reminder.id}-${now.toDateString()}`, now.getTime(), now.getTime(), reminder.message);
+      this.maybeFire(
+        `rem-${reminder.id}-${now.toDateString()}`,
+        now.getTime(),
+        now.getTime(),
+        reminder.message,
+        reminder.sound ? 'short' : 'silent'
+      );
     }
   }
 
-  private maybeFire(id: string, target: number, now: number, message: string): void {
+  private maybeFire(
+    id: string,
+    target: number,
+    now: number,
+    message: string,
+    sound: AdhanSound
+  ): void {
     if (this.fired.has(id)) {
       return;
     }
@@ -126,7 +171,36 @@ export class NotificationService {
         /* ignore */
       }
     }
-    this.beep();
+    this.playSound(sound);
+  }
+
+  private playSound(sound: AdhanSound): void {
+    if (sound === 'silent') {
+      return;
+    }
+    const volume = Math.min(1, Math.max(0, this.settings.settings().alertVolume));
+    if (sound === 'athan') {
+      const voice = findAdhanVoice(this.settings.settings().adhanVoice);
+      this.playAdhanFile(voice.file, volume);
+      return;
+    }
+    this.beep(volume);
+  }
+
+  private playAdhanFile(file: string, volume: number): void {
+    try {
+      let audio = this.adhanCache.get(file);
+      if (!audio) {
+        audio = new Audio(file);
+        audio.preload = 'auto';
+        this.adhanCache.set(file, audio);
+      }
+      audio.currentTime = 0;
+      audio.volume = Math.min(1, Math.max(0, volume));
+      void audio.play().catch(() => this.beep(volume));
+    } catch {
+      this.beep(volume);
+    }
   }
 
   private showInApp(message: string): void {
@@ -138,16 +212,20 @@ export class NotificationService {
     }, 8000);
   }
 
-  private beep(): void {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 660;
-    gain.gain.value = 0.05;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.4);
+  private beep(volume = 0.05): void {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 660;
+      gain.gain.value = Math.min(0.3, volume * 0.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } catch {
+      /* ignore */
+    }
   }
 }
