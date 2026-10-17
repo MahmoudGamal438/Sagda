@@ -19,14 +19,47 @@ interface ApiEnvelope<T> {
 @Injectable({ providedIn: 'root' })
 export class QuranService {
   readonly reciters: Reciter[] = [
-    { id: 'ar.alafasy', name: 'مشاري راشد العفاسي', style: 'مرتل' },
-    { id: 'ar.husary', name: 'محمود خليل الحصري', style: 'مرتل' },
-    { id: 'ar.minshawi', name: 'محمد صديق المنشاوي', style: 'مرتل' },
-    { id: 'ar.abdulbasitmurattal', name: 'عبد الباسط عبد الصمد', style: 'مرتل' },
-    { id: 'ar.sudais', name: 'عبد الرحمن السديس', style: 'مرتل' },
-    { id: 'ar.shaatree', name: 'أبو بكر الشاطري', style: 'مرتل' },
-    { id: 'ar.mahermuaiqly', name: 'ماهر المعيقلي', style: 'مرتل' }
+    { id: 'ar.husary', name: 'محمود خليل الحصري', style: 'مرتل', country: 'مصر', bitrate: 128 },
+    {
+      id: 'ar.husarymujawwad',
+      name: 'محمود خليل الحصري',
+      style: 'مجوّد',
+      country: 'مصر',
+      bitrate: 128
+    },
+    { id: 'ar.minshawi', name: 'محمد صديق المنشاوي', style: 'مرتل', country: 'مصر', bitrate: 128 },
+    {
+      id: 'ar.minshawimujawwad',
+      name: 'محمد صديق المنشاوي',
+      style: 'مجوّد',
+      country: 'مصر',
+      bitrate: 64
+    },
+    {
+      id: 'ar.abdulbasitmurattal',
+      name: 'عبد الباسط عبد الصمد',
+      style: 'مرتل',
+      country: 'مصر',
+      bitrate: 64
+    },
+    {
+      id: 'ar.muhammadjibreel',
+      name: 'محمد جبريل',
+      style: 'مرتل',
+      country: 'مصر',
+      bitrate: 128
+    },
+    { id: 'ar.alafasy', name: 'مشاري راشد العفاسي', style: 'مرتل', bitrate: 128 },
+    { id: 'ar.abdurrahmaansudais', name: 'عبد الرحمن السديس', style: 'مرتل', bitrate: 64 },
+    { id: 'ar.shaatree', name: 'أبو بكر الشاطري', style: 'مرتل', bitrate: 128 },
+    { id: 'ar.mahermuaiqly', name: 'ماهر المعيقلي', style: 'مرتل', bitrate: 128 },
+    { id: 'ar.hudhaify', name: 'علي الحذيفي', style: 'مرتل', bitrate: 128 },
+    { id: 'ar.muhammadayyoub', name: 'محمد أيوب', style: 'مرتل', bitrate: 128 }
   ];
+
+  /** القُرّاء المصريون أولًا لعرضهم في صدارة الواجهة */
+  readonly egyptianReciters: Reciter[] = this.reciters.filter((r) => r.country === 'مصر');
+
 
   readonly surahs = signal<SurahMeta[]>([]);
   readonly loading = signal(false);
@@ -95,11 +128,20 @@ export class QuranService {
   }
 
   ayahAudioUrl(globalAyahNumber: number, reciterId: string): string {
-    return `${environment.quranAudioCdn}/${reciterId}/${globalAyahNumber}.mp3`;
+    const reciter = this.reciters.find((r) => r.id === reciterId);
+    const bitrate = reciter?.bitrate ?? 128;
+    if (reciter?.surahOnly) {
+      return this.surahAudioUrl(Math.max(1, globalAyahNumber), reciterId);
+    }
+    return `${environment.quranAudioCdn.replace(/\/\d+$/, '')}/${bitrate}/${reciterId}/${globalAyahNumber}.mp3`;
   }
 
   surahAudioUrl(surahNumber: number, reciterId: string): string {
     return `${environment.quranAudioSurahCdn}/${reciterId}/${surahNumber}.mp3`;
+  }
+
+  reciterName(id: string): string {
+    return this.reciters.find((r) => r.id === id)?.name ?? id;
   }
 
   revelationLabel(type: string): string {

@@ -94,6 +94,23 @@ export class PrayerService {
     return this.findNext(day.timings);
   });
 
+  readonly isRamadan = computed(() => this.today()?.date.hijriMonthNumber === 9);
+
+  readonly ramadan = computed(() => {
+    this.tick();
+    const day = this.today();
+    if (!day) {
+      return null;
+    }
+    const now = new Date();
+    const imsak = day.imsak ? this.parseTime(day.imsak, now) : null;
+    const iftar = this.parseTime(day.timings.Maghrib, now);
+    const suhoorEnd = this.parseTime(day.timings.Fajr, now);
+    const next = now.getTime() < suhoorEnd.getTime() ? suhoorEnd : iftar;
+    const label = now.getTime() < suhoorEnd.getTime() ? 'الإمساك' : 'الإفطار';
+    return { imsak, iftar, suhoorEnd, next, label };
+  });
+
   patchSettings(partial: Partial<PrayerSettings>): void {
     this.settings.update((current) => {
       const next = { ...current, ...partial };
@@ -234,6 +251,10 @@ export class PrayerService {
     return raw ? formatTime(raw, this.settings().use24Hour) : '—';
   }
 
+  formatAnyTime(hhmm: string | null | undefined): string {
+    return hhmm ? formatTime(hhmm, this.settings().use24Hour) : '—';
+  }
+
   countdownTo(to: Date): ReturnType<typeof countdown> {
     return countdown(to, new Date());
   }
@@ -271,11 +292,13 @@ export class PrayerService {
         Maghrib: shift('Maghrib'),
         Isha: shift('Isha')
       },
+      imsak: data.timings.Imsak ?? null,
       date: {
         readable: data.date.readable,
         gregorian: `${data.date.gregorian.day} ${data.date.gregorian.month.en} ${data.date.gregorian.year}`,
         hijri: `${data.date.hijri.day} ${data.date.hijri.month.ar} ${data.date.hijri.year}`,
         hijriMonth: data.date.hijri.month.ar,
+        hijriMonthNumber: data.date.hijri.month.number,
         hijriWeekday: data.date.hijri.weekday.ar
       },
       meta: {
@@ -290,7 +313,7 @@ export class PrayerService {
 }
 
 interface AladhanDay {
-  timings: PrayerTimings;
+  timings: PrayerTimings & { Imsak?: string };
   date: {
     readable: string;
     gregorian: { day: string; month: { en: string }; year: string };

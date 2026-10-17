@@ -49,6 +49,35 @@
       <small class="muted">يُعرض للعلم، وليس صلاة مفروضة.</small>
     </article>
 
+    @if (prayer.isRamadan() && prayer.ramadan(); as r) {
+      <article class="ramadan card">
+        <div class="rm-head">
+          <span class="rm-icon"><app-icon name="moon" /></span>
+          <div>
+            <h2>رمضان مبارك</h2>
+            <p class="muted small">تقبّل الله صيامكم وقيامكم.</p>
+          </div>
+        </div>
+        <div class="rm-grid">
+          <div class="rm-item">
+            <span class="rm-label"><app-icon name="sunrise" /> نهاية السحور (الفجر)</span>
+            <strong>{{ prayer.formatAnyTime(day.timings.Fajr) }}</strong>
+          </div>
+          <div class="rm-item">
+            <span class="rm-label"><app-icon name="sunset" /> الإفطار (المغرب)</span>
+            <strong>{{ prayer.formatAnyTime(day.timings.Maghrib) }}</strong>
+          </div>
+        </div>
+        <p class="rm-clock" aria-live="polite">
+          المتبقي إلى {{ r.label }}:
+          <strong>{{ prayer.remaining(r.next) }}</strong>
+        </p>
+        @if (day.imsak) {
+          <p class="muted small">الإمساك احتياطًا: {{ prayer.formatAnyTime(day.imsak) }}</p>
+        }
+      </article>
+    }
+
     @if (countdown(); as c) {
       <article class="countdown card">
         <div class="cd-label">

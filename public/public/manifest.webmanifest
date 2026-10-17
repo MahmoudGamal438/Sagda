@@ -1,0 +1,67 @@
+{
+  "name": "سجدة — قرآن وأذكار ومواقيت الصلاة",
+  "short_name": "سجدة",
+  "description": "منصة إسلامية مصرية للقرآن الكريم والأذكار ومواقيت الصلاة والأذان بصوت كبار المقرئين والمؤذنين المصريين.",
+  "lang": "ar",
+  "dir": "rtl",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a1226",
+  "theme_color": "#12264a",
+  "categories": ["lifestyle", "education"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "مواقيت الصلاة",
+      "short_name": "المواقيت",
+      "url": "/prayer",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "القرآن الكريم",
+      "short_name": "القرآن",
+      "url": "/quran",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "إذاعة القرآن الكريم من القاهرة",
+      "short_name": "الراديو",
+      "url": "/radio",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "الأذكار",
+      "short_name": "الأذكار",
+      "url": "/adhkar",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

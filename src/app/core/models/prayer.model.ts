@@ -9,11 +9,13 @@ export interface PrayerTimings {
 
 export interface PrayerDay {
   timings: PrayerTimings;
+  imsak?: string | null;
   date: {
     readable: string;
     gregorian: string;
     hijri: string;
     hijriMonth: string;
+    hijriMonthNumber?: number;
     hijriWeekday: string;
   };
   meta: {

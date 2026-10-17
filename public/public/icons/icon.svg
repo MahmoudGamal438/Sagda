@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#0a1226"/>
+      <stop offset="0.55" stop-color="#12264a"/>
+      <stop offset="1" stop-color="#1c3a6e"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#fdf3d4"/>
+      <stop offset="0.45" stop-color="#eccd80"/>
+      <stop offset="1" stop-color="#c39a45"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.36" r="0.62">
+      <stop offset="0" stop-color="#e8c875" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#e8c875" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="116" fill="url(#glow)"/>
+
+  <g transform="translate(256 274)" stroke="url(#gold)" stroke-opacity="0.20" fill="none" stroke-width="6" stroke-linejoin="round">
+    <rect x="-108" y="-108" width="216" height="216" rx="14"/>
+    <rect x="-108" y="-108" width="216" height="216" rx="14" transform="rotate(45)"/>
+  </g>
+
+  <g fill="url(#gold)">
+    <path d="M156 236a12 12 0 0 1 24 0Z"/>
+    <rect x="164.5" y="236" width="7" height="16" rx="3"/>
+    <rect x="157" y="250" width="22" height="144" rx="8"/>
+    <path d="M332 236a12 12 0 0 1 24 0Z"/>
+    <rect x="340.5" y="236" width="7" height="16" rx="3"/>
+    <rect x="333" y="250" width="22" height="144" rx="8"/>
+  </g>
+
+  <path d="M256 214a17 17 0 1 0 0 34 13 13 0 1 1 0-34Z" fill="url(#gold)"/>
+  <rect x="253" y="244" width="6" height="16" rx="3" fill="url(#gold)"/>
+
+  <path d="M210 394V310a46 46 0 0 1 92 0v84Z" fill="url(#gold)"/>
+  <path d="M234 394v-32a22 22 0 0 1 44 0v32Z" fill="#0a1226" opacity="0.62"/>
+
+  <rect x="120" y="392" width="272" height="12" rx="6" fill="url(#gold)"/>
+</svg>

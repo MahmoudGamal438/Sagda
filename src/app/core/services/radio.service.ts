@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FALLBACK_STATIONS, RadioStation } from '../models/radio.model';
+import { FALLBACK_STATIONS, EGYPT_STATIONS, RadioStation } from '../models/radio.model';
 import { StorageService } from './storage.service';
 
 interface RadioEnvelope {
@@ -14,7 +14,7 @@ export class RadioService {
   private http = inject(HttpClient);
   private storage = inject(StorageService);
 
-  readonly stations = signal<RadioStation[]>(this.storage.get('radio-stations', FALLBACK_STATIONS));
+  readonly stations = signal<RadioStation[]>(this.loadInitial());
   readonly current = signal<RadioStation | null>(null);
   readonly playing = signal(false);
   readonly loading = signal(false);
@@ -22,6 +22,18 @@ export class RadioService {
   readonly volume = signal(this.storage.get('radio-volume', 0.8));
 
   private audio = new Audio();
+
+  private loadInitial(): RadioStation[] {
+    const cached = this.storage.get<RadioStation[]>('radio-stations', FALLBACK_STATIONS);
+    return this.withEgypt(cached);
+  }
+
+  private withEgypt(list: RadioStation[]): RadioStation[] {
+    const rest = (list ?? []).filter(
+      (s) => !EGYPT_STATIONS.some((e) => e.url === s.url)
+    );
+    return [...EGYPT_STATIONS, ...rest];
+  }
 
   constructor() {
     this.audio.preload = 'none';
@@ -47,9 +59,15 @@ export class RadioService {
         this.http.get<RadioEnvelope>(`${environment.radioApi}/radios?language=ar`)
       );
       if (res.radios?.length) {
-        const mapped = res.radios.map((r) => ({ id: r.id, name: r.name, url: r.url }));
-        this.stations.set(mapped);
-        this.storage.set('radio-stations', mapped);
+        const mapped: RadioStation[] = res.radios.map((r) => ({
+          id: r.id,
+          name: r.name,
+          url: r.url,
+          category: 'quran'
+        }));
+        const merged = this.withEgypt(mapped);
+        this.stations.set(merged);
+        this.storage.set('radio-stations', merged);
       }
     } catch {
       // keep cached / fallback list

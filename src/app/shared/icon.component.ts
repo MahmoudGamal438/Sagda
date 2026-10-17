@@ -42,7 +42,11 @@ const ICONS: Record<string, string> = {
   chevronRight: '<path d="M9.5 6l6 6-6 6"/>',
   chevronDown: '<path d="M6 9.5l6 6 6-6"/>',
   radio:
-    '<rect x="3.5" y="8" width="17" height="11" rx="2.5"/><circle cx="12" cy="13.5" r="3"/><path d="M7.4 8 16.5 4.6M17 8h0.01"/>',
+    '<path d="M12 12.5V9.5"/><circle cx="12" cy="13.6" r="1.6"/><path d="M8.2 11.4a5.3 5.3 0 0 1 7.6 0"/><path d="M5.6 8.8a9 9 0 0 1 12.8 0"/><path d="M12 15.2V21"/><path d="M8.6 21h6.8"/>',
+  download:
+    '<path d="M12 4v10"/><path d="M8 10.5 12 14.5l4-4"/><path d="M5 18.5h14"/>',
+  mosque:
+    '<path d="M12 3c2.6 2.4 4.2 4.3 4.2 6.3A4.2 4.2 0 0 1 12 13.5a4.2 4.2 0 0 1-4.2-4.2C7.8 7.3 9.4 5.4 12 3Z"/><path d="M6 21v-5.2c0-1.4 1.1-2.5 2.5-2.5h7c1.4 0 2.5 1.1 2.5 2.5V21"/><path d="M4 21V9.8M20 21V9.8"/><path d="M3 21h18"/>',
   headset:
     '<path d="M4 13a8 8 0 0 1 16 0"/><path d="M4 13v3.4a2 2 0 0 0 2 2h1.2V13H4ZM20 13v3.4a2 2 0 0 1-2 2h-1.2V13H20Z"/>',
   sparkles:

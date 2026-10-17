@@ -139,6 +139,76 @@
     linear-gradient(135deg, color-mix(in srgb, var(--color-gold) 12%, transparent), transparent 60%),
     var(--color-surface);
 }
+
+.ramadan {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1.1rem 1.3rem;
+  border-color: color-mix(in srgb, var(--color-gold) 40%, transparent);
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--color-gold) 16%, transparent), transparent 55%),
+    var(--color-surface);
+}
+.ramadan .rm-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.ramadan .rm-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  color: var(--color-gold);
+  background: color-mix(in srgb, var(--color-gold) 14%, transparent);
+  flex: 0 0 auto;
+}
+.ramadan h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-gold);
+}
+.ramadan .small {
+  margin: 0;
+  font-size: 0.78rem;
+}
+.ramadan .rm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+.ramadan .rm-item {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
+  background: color-mix(in srgb, var(--color-gold) 6%, transparent);
+}
+.ramadan .rm-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+.ramadan .rm-label app-icon {
+  color: var(--color-gold);
+}
+.ramadan .rm-item strong {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+.ramadan .rm-clock {
+  margin: 0;
+  font-size: 0.92rem;
+}
+.ramadan .rm-clock strong {
+  color: var(--color-gold);
+}
 .countdown h2 {
   margin: 0.15rem 0;
   font-size: 1.5rem;

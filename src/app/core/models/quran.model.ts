@@ -27,6 +27,12 @@ export interface Reciter {
   id: string;
   name: string;
   style: string;
+  /** دولة القارئ، تُستخدم لعرض القُرّاء المصريين أولًا */
+  country?: string;
+  /** معدل البت المتاح فعليًا على CDN لهذه التلاوة */
+  bitrate?: 64 | 128;
+  /** متاح فقط بمسار السورة الكاملة لا بمسار الآية */
+  surahOnly?: boolean;
 }
 
 export interface TafsirAyah {

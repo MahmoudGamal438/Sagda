@@ -56,13 +56,18 @@ import { SettingsService, DEFAULT_DUA } from '../core/services/settings.service'
 export class WelcomeModalComponent {
   readonly settings = inject(SettingsService);
   readonly defaultDua = DEFAULT_DUA;
-  readonly visible = signal(true);
+  readonly visible = signal(false);
 
   start(): void {
-    this.visible.set(false);
+    this.close();
   }
 
   dismiss(): void {
+    this.close();
+  }
+
+  private close(): void {
+    localStorage.setItem('sujda:welcome-seen', '1');
     this.visible.set(false);
   }
 }

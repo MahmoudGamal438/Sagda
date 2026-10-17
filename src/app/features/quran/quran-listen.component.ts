@@ -5,6 +5,7 @@ import { AudioService } from '../../core/services/audio.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { UserDataService } from '../../core/services/user-data.service';
 import { IconComponent } from '../../shared/icon.component';
+import { Reciter } from '../../core/models/quran.model';
 
 @Component({
   selector: 'app-quran-listen',
@@ -71,8 +72,25 @@ import { IconComponent } from '../../shared/icon.component';
         <p class="muted small">يتم التشغيل بعد تفاعلك فقط، ولا يُشغَّل الصوت تلقائيًا.</p>
       </div>
 
+      <h2 class="sec-title">قُرّاء مصر</h2>
       <div class="grid reciters">
-        @for (r of quran.reciters; track r.id) {
+        @for (r of quran.egyptianReciters; track r.id) {
+          <button
+            type="button"
+            class="card reciter"
+            [class.active]="settings.settings().reciterId === r.id"
+            (click)="onReciter(r.id)"
+          >
+            <app-icon name="headset" />
+            <strong>{{ r.name }}</strong>
+            <small>{{ r.style }} · مصر</small>
+          </button>
+        }
+      </div>
+
+      <h2 class="sec-title">قُرّاء آخرون</h2>
+      <div class="grid reciters">
+        @for (r of otherReciters(); track r.id) {
           <button
             type="button"
             class="card reciter"
@@ -97,6 +115,7 @@ import { IconComponent } from '../../shared/icon.component';
       .controls { align-items: center; }
       .err { color: var(--color-danger); }
       .small { font-size: 0.78rem; }
+      .sec-title { font-size: 1rem; margin: 1rem 0 0.5rem; }
       .reciters { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
       .reciter { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 1rem 0.6rem; text-align: center; }
       .reciter app-icon { color: var(--color-gold); }
@@ -121,6 +140,10 @@ export class QuranListenComponent implements OnInit {
 
   onReciter(id: string): void {
     this.settings.patch({ reciterId: id });
+  }
+
+  otherReciters(): Reciter[] {
+    return this.quran.reciters.filter((r) => r.country !== 'مصر');
   }
 
   async playSelected(): Promise<void> {
